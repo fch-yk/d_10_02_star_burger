@@ -1,5 +1,6 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Restaurant(models.Model):
@@ -121,3 +122,63 @@ class RestaurantMenuItem(models.Model):
 
     def __str__(self):
         return f"{self.restaurant.name} - {self.product.name}"
+
+
+class Order(models.Model):
+    address = models.CharField(
+        verbose_name='адрес',
+        max_length=150,
+    )
+
+    first_name = models.CharField(
+        verbose_name='имя',
+        max_length=50,
+    )
+
+    last_name = models.CharField(
+        verbose_name='фамилия',
+        max_length=50,
+    )
+
+    mobile_number = PhoneNumberField(
+        'мобильный номер',
+        region='RU',
+        db_index=True,
+    )
+
+    class Meta:
+        verbose_name = 'заказ'
+        verbose_name_plural = 'заказы'
+
+    def __str__(self):
+        return f'Заказ № {self.id} {self.first_name} {self.last_name}\
+            {self.address}'
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        'Order',
+        on_delete=models.CASCADE,
+        verbose_name='заказ',
+        related_name='items'
+    )
+
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE,
+        verbose_name='товар',
+        related_name='order_items'
+    )
+
+    quantity = models.PositiveSmallIntegerField(
+        verbose_name='количество',
+        validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+
+    class Meta:
+        verbose_name = 'элемент заказа'
+        verbose_name_plural = 'элементы заказa'
+
+    def __str__(self):
+        return f'{self.product.name} {self.order.first_name}\
+            {self.order.last_name} {self.order.address}'
