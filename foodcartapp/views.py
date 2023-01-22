@@ -1,9 +1,10 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from .models import Order, OrderItem, Product
-from rest_framework.response import Response
 
 
 def banners_list_api(request):
@@ -60,13 +61,23 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
+    order_card = request.data
+    products = order_card.get('products', None)
+    if not isinstance(products, list):
+        content = {'error': 'product key not presented or not list'}
+        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not products:
+        content = {'error': 'products list cannot be empty'}
+        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+
     order = Order.objects.create(
-        address=request.data['address'],
-        first_name=request.data['firstname'],
-        last_name=request.data['lastname'],
-        mobile_number=request.data['phonenumber'],
+        address=order_card['address'],
+        first_name=order_card['firstname'],
+        last_name=order_card['lastname'],
+        mobile_number=order_card['phonenumber'],
     )
-    for item_card in request.data['products']:
+    for item_card in products:
         OrderItem.objects.create(
             order=order,
             product=Product.objects.get(id=item_card['product']),
