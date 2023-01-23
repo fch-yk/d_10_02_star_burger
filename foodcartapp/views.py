@@ -100,9 +100,9 @@ def register_order(request):
 
         order = Order.objects.create(
             address=order_card['address'],
-            first_name=order_card['firstname'],
-            last_name=order_card['lastname'],
-            mobile_number=order_card['phonenumber'],
+            firstname=order_card['firstname'],
+            lastname=order_card['lastname'],
+            phonenumber=order_card['phonenumber'],
         )
         for product_card in products:
             OrderItem.objects.create(
