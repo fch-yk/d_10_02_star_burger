@@ -1,8 +1,11 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from phonenumber_field.validators import validate_international_phonenumber
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.core.exceptions import ValidationError
+
 
 from .models import Order, OrderItem, Product
 
@@ -59,28 +62,63 @@ def product_list_api(request):
     })
 
 
-@api_view(['POST'])
+def validate_order_card(order_card):
+    sections = (
+        {'key': 'address', 'valid_class': str},
+        {'key': 'firstname', 'valid_class': str},
+        {'key': 'lastname', 'valid_class': str},
+        {'key': 'phonenumber', 'valid_class': str},
+        {'key': 'products', 'valid_class': list},
+    )
+    for section in sections:
+        order_clause = order_card.get(section['key'], section['valid_class'])
+        if not isinstance(order_clause, section['valid_class']):
+            raise ValidationError(
+                f'{section["key"]} key not presented '
+                f'or not {section["valid_class"]}'
+            )
+
+        if not order_clause:
+            raise ValidationError(f'{section["key"]} cannot be empty')
+
+        validate_international_phonenumber(order_card['phonenumber'])
+
+
+@ api_view(['POST'])
 def register_order(request):
     order_card = request.data
-    products = order_card.get('products', None)
-    if not isinstance(products, list):
-        content = {'error': 'product key not presented or not list'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+    try:
+        validate_order_card(order_card)
+        products = []
+        for item_card in order_card['products']:
+            products.append(
+                {
+                    'product': Product.objects.get(id=item_card['product']),
+                    'quantity': item_card['quantity']
+                }
+            )
 
-    if not products:
-        content = {'error': 'products list cannot be empty'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    order = Order.objects.create(
-        address=order_card['address'],
-        first_name=order_card['firstname'],
-        last_name=order_card['lastname'],
-        mobile_number=order_card['phonenumber'],
-    )
-    for item_card in products:
-        OrderItem.objects.create(
-            order=order,
-            product=Product.objects.get(id=item_card['product']),
-            quantity=item_card['quantity'],
+        order = Order.objects.create(
+            address=order_card['address'],
+            first_name=order_card['firstname'],
+            last_name=order_card['lastname'],
+            mobile_number=order_card['phonenumber'],
         )
+        for product_card in products:
+            OrderItem.objects.create(
+                order=order,
+                product=product_card['product'],
+                quantity=product_card['quantity'],
+            )
+    except (ValidationError) as error:
+        return Response(
+            {'error': error},
+            status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+    except (Product.DoesNotExist) as error:
+        return Response(
+            {'error': f'{str(error)} id: {item_card["product"]}'},
+            status=status.HTTP_406_NOT_ACCEPTABLE
+        )
+
     return Response({})
