@@ -1,13 +1,32 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.templatetags.static import static
-from phonenumber_field.validators import validate_international_phonenumber
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.core.exceptions import ValidationError
-
+from rest_framework.serializers import ModelSerializer
 
 from .models import Order, OrderItem, Product
+
+
+class OrderItemSeiralizer(ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['product', 'quantity',]
+
+
+class OrderSeiralizer(ModelSerializer):
+    products = OrderItemSeiralizer(many=True, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = [
+            'address',
+            'firstname',
+            'lastname',
+            'phonenumber',
+            'products'
+        ]
 
 
 def banners_list_api(request):
@@ -62,63 +81,26 @@ def product_list_api(request):
     })
 
 
-def validate_order_card(order_card):
-    sections = (
-        {'key': 'address', 'valid_class': str},
-        {'key': 'firstname', 'valid_class': str},
-        {'key': 'lastname', 'valid_class': str},
-        {'key': 'phonenumber', 'valid_class': str},
-        {'key': 'products', 'valid_class': list},
-    )
-    for section in sections:
-        order_clause = order_card.get(section['key'], section['valid_class'])
-        if not isinstance(order_clause, section['valid_class']):
-            raise ValidationError(
-                f'{section["key"]} key not presented '
-                f'or not {section["valid_class"]}'
-            )
-
-        if not order_clause:
-            raise ValidationError(f'{section["key"]} cannot be empty')
-
-        validate_international_phonenumber(order_card['phonenumber'])
-
-
 @ api_view(['POST'])
 def register_order(request):
-    order_card = request.data
+    serializer = OrderSeiralizer(data=request.data)
     try:
-        validate_order_card(order_card)
-        products = []
-        for item_card in order_card['products']:
-            products.append(
-                {
-                    'product': Product.objects.get(id=item_card['product']),
-                    'quantity': item_card['quantity']
-                }
-            )
-
-        order = Order.objects.create(
-            address=order_card['address'],
-            firstname=order_card['firstname'],
-            lastname=order_card['lastname'],
-            phonenumber=order_card['phonenumber'],
-        )
-        for product_card in products:
-            OrderItem.objects.create(
-                order=order,
-                product=product_card['product'],
-                quantity=product_card['quantity'],
-            )
+        serializer.is_valid(raise_exception=True)
     except (ValidationError) as error:
         return Response(
             {'error': error},
             status=status.HTTP_406_NOT_ACCEPTABLE
         )
-    except (Product.DoesNotExist) as error:
-        return Response(
-            {'error': f'{str(error)} id: {item_card["product"]}'},
-            status=status.HTTP_406_NOT_ACCEPTABLE
-        )
+
+    order = Order.objects.create(
+        address=serializer.validated_data['address'],
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+    )
+
+    products_fields = serializer.validated_data['products']
+    products = [OrderItem(order=order, **fields) for fields in products_fields]
+    OrderItem.objects.bulk_create(products)
 
     return Response({})
