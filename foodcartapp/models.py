@@ -154,13 +154,6 @@ class Order(models.Model):
         return f'Заказ № {self.id} {self.firstname} {self.lastname}\
             {self.address}'
 
-    @property
-    def fullname(self):
-        "Returns the person's full name."
-        return '%s %s' % (self.firstname, self.lastname)
-
-    fullname.fget.short_description = 'First and last name'
-
 
 class OrderItem(models.Model):
     order = models.ForeignKey(
