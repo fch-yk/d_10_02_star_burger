@@ -105,7 +105,13 @@ def register_order(request):
     )
 
     products_fields = serializer.validated_data['products']
-    products = [OrderItem(order=order, **fields) for fields in products_fields]
+    products = [
+        OrderItem(
+            order=order,
+            price=fields['product'].price,
+            **fields
+        ) for fields in products_fields
+    ]
     OrderItem.objects.bulk_create(products)
 
     serializer = OrderSeiralizer(order)
