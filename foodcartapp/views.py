@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework import status
@@ -96,23 +97,23 @@ def register_order(request):
             {'error': error},
             status=status.HTTP_406_NOT_ACCEPTABLE
         )
+    with transaction.atomic():
+        order = Order.objects.create(
+            address=serializer.validated_data['address'],
+            firstname=serializer.validated_data['firstname'],
+            lastname=serializer.validated_data['lastname'],
+            phonenumber=serializer.validated_data['phonenumber'],
+        )
 
-    order = Order.objects.create(
-        address=serializer.validated_data['address'],
-        firstname=serializer.validated_data['firstname'],
-        lastname=serializer.validated_data['lastname'],
-        phonenumber=serializer.validated_data['phonenumber'],
-    )
-
-    products_fields = serializer.validated_data['products']
-    products = [
-        OrderItem(
-            order=order,
-            price=fields['product'].price,
-            **fields
-        ) for fields in products_fields
-    ]
-    OrderItem.objects.bulk_create(products)
+        products_fields = serializer.validated_data['products']
+        products = [
+            OrderItem(
+                order=order,
+                price=fields['product'].price,
+                **fields
+            ) for fields in products_fields
+        ]
+        OrderItem.objects.bulk_create(products)
 
     serializer = OrderSeiralizer(order)
     return Response(serializer.data)
