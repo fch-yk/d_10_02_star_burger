@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
@@ -163,6 +165,11 @@ class Order(models.Model):
     def __str__(self):
         return f'Заказ № {self.id} {self.firstname} {self.lastname}\
             {self.address}'
+
+    @classmethod
+    def opts(cls):
+        Opts = namedtuple('Opts', ['app_label', 'model_name'])
+        return Opts(cls._meta.app_label, cls._meta.model_name)
 
 
 class OrderItem(models.Model):
