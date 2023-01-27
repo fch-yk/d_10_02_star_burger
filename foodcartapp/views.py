@@ -103,7 +103,8 @@ def register_order(request):
         lastname=serializer.validated_data['lastname'],
         phonenumber=serializer.validated_data['phonenumber'],
     )
-
+    a = 5/0
+    print(a)
     products_fields = serializer.validated_data['products']
     products = [
         OrderItem(
