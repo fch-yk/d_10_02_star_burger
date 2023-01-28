@@ -135,6 +135,17 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+    UNPROCESSED = 'UP'
+    ASSEMBLY = 'AS'
+    DELIVERY = 'DE'
+    COMPLETED = 'CO'
+    STATUS_CHOICES = [
+        (UNPROCESSED, 'Необработанный'),
+        (ASSEMBLY, 'Сборка'),
+        (DELIVERY, 'Доставка'),
+        (COMPLETED, 'Выполнен'),
+    ]
+
     address = models.CharField(
         verbose_name='адрес',
         max_length=150,
@@ -153,6 +164,14 @@ class Order(models.Model):
     phonenumber = PhoneNumberField(
         'мобильный номер',
         region='RU',
+        db_index=True,
+    )
+
+    status = models.CharField(
+        verbose_name='Статус',
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default=UNPROCESSED,
         db_index=True,
     )
 

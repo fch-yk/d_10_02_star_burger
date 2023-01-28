@@ -121,7 +121,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = (OrderItemInline,)
-    list_display = ('__str__', 'phonenumber',)
+    list_display = ('__str__', 'phonenumber', 'status')
 
     def response_change(self, request, obj):
         if '_save' not in request.POST:
