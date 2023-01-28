@@ -1,14 +1,11 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import redirect, reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
-from .models import Product
-from .models import ProductCategory
-from .models import Restaurant
-from .models import RestaurantMenuItem
-from .models import Order
-from .models import OrderItem
+from .models import (Order, OrderItem, Product, ProductCategory, Restaurant,
+                     RestaurantMenuItem)
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -125,3 +122,13 @@ class OrderItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = (OrderItemInline,)
     list_display = ('__str__', 'phonenumber',)
+
+    def response_change(self, request, obj):
+        if '_save' not in request.POST:
+            return super().response_change(request, obj)
+
+        next_url = request.GET.get('next', None)
+        if url_has_allowed_host_and_scheme(next_url, None):
+            return redirect(next_url)
+
+        return super().response_change(request, obj)
