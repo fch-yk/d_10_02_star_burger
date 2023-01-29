@@ -146,6 +146,13 @@ class Order(models.Model):
         (COMPLETED, 'Выполнен'),
     ]
 
+    IN_CASH = 'CA'
+    ELECTRONICALLY = 'EL'
+    PAYMENT_METHOD_CHOICES = [
+        (IN_CASH, 'Наличностью'),
+        (ELECTRONICALLY, 'Электронно'),
+    ]
+
     address = models.CharField(
         verbose_name='адрес',
         max_length=150,
@@ -197,6 +204,14 @@ class Order(models.Model):
         verbose_name='доставлен в',
         blank=True,
         null=True,
+        db_index=True,
+    )
+
+    payment_method = models.CharField(
+        verbose_name='Способ оплаты',
+        max_length=2,
+        choices=PAYMENT_METHOD_CHOICES,
+        default=IN_CASH,
         db_index=True,
     )
 
