@@ -180,6 +180,26 @@ class Order(models.Model):
         blank=True,
     )
 
+    registered_at = models.DateTimeField(
+        verbose_name='зарегистрирован в',
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    called_at = models.DateTimeField(
+        verbose_name='звонок в',
+        blank=True,
+        null=True,
+        db_index=True,
+    )
+
+    delivered_at = models.DateTimeField(
+        verbose_name='доставлен в',
+        blank=True,
+        null=True,
+        db_index=True,
+    )
+
     objects = OrderQuerySet.as_manager()
 
     class Meta:
