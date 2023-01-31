@@ -2,11 +2,13 @@ from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Case, Value, When
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 
-from foodcartapp.models import Order, Product, Restaurant
+from foodcartapp.models import (Order, OrderItem, Product, Restaurant,
+                                RestaurantMenuItem)
 
 
 class Login(forms.Form):
@@ -97,10 +99,38 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    order_items = Order.objects.get_cost().exclude(status=Order.COMPLETED)
+    orders = Order.objects.get_cost().exclude(status=Order.COMPLETED)\
+        .order_by(
+            Case(
+                When(status=Order.UNPROCESSED, then=Value(0)),
+                When(status=Order.ASSEMBLY, then=Value(1)),
+                default=Value(2),
+            ),
+            '-id',
+    )
+    orders_ids = [order.id for order in orders]
+    orders_products, products_ids = OrderItem.get_orders_products(orders_ids)
+
+    menu_items = RestaurantMenuItem.objects.get_available_menu_items(
+        products_ids
+    )
+
+    menus, restaurants = RestaurantMenuItem.get_restaurants_menus(menu_items)
+
+    order_cards = []
+    for order in orders:
+        possible_restaurants = order.get_possible_restaurants(
+            menus,
+            restaurants,
+            orders_products[order.id]
+        )
+        order_cards.append(
+            {'order': order, 'possible_restaurants': possible_restaurants, }
+        )
+
     return render(
         request, template_name='order_items.html', context={
-            'order_items': order_items,
+            'order_cards': order_cards,
             'order_opts': Order.opts()
         }
     )

@@ -1,4 +1,5 @@
-from collections import namedtuple
+from collections import namedtuple, defaultdict
+from typing import List, Tuple, Set, Dict
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -97,6 +98,17 @@ class Product(models.Model):
         return self.name
 
 
+class RestaurantMenuItemQuerySet(models.QuerySet):
+    def get_available_menu_items(self, products_ids):
+        return self.filter(availability=True)\
+            .select_related('restaurant')\
+            .values(
+            'restaurant',
+            'restaurant__name',
+            'product'
+        ).filter(product__id__in=products_ids)
+
+
 class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
@@ -116,6 +128,8 @@ class RestaurantMenuItem(models.Model):
         db_index=True
     )
 
+    objects = RestaurantMenuItemQuerySet.as_manager()
+
     class Meta:
         verbose_name = 'пункт меню ресторана'
         verbose_name_plural = 'пункты меню ресторана'
@@ -126,10 +140,25 @@ class RestaurantMenuItem(models.Model):
     def __str__(self):
         return f"{self.restaurant.name} - {self.product.name}"
 
+    @staticmethod
+    def get_restaurants_menus(
+        menu_items: models.QuerySet
+    ) -> Tuple[defaultdict, Dict]:
+        restaurants = {}
+        menus = defaultdict(list)
+        for menu_item in menu_items:
+            menus[menu_item['restaurant']].append(menu_item['product'])
+            restaurants[menu_item['restaurant']] = menu_item[
+                'restaurant__name'
+            ]
+
+        return menus, restaurants
+
 
 class OrderQuerySet(models.QuerySet):
     def get_cost(self):
-        return self.annotate(
+        return self.prefetch_related('restaurant').\
+            annotate(
             cost=Sum(F('products__quantity') * F('products__price'))
         ).order_by('-id')
 
@@ -215,6 +244,15 @@ class Order(models.Model):
         db_index=True,
     )
 
+    restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='orders',
+        verbose_name="ресторан",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+
     objects = OrderQuerySet.as_manager()
 
     class Meta:
@@ -224,6 +262,25 @@ class Order(models.Model):
     def __str__(self):
         return f'Заказ № {self.id} {self.firstname} {self.lastname}\
             {self.address}'
+
+    def get_possible_restaurants(
+        self,
+        menu: defaultdict,
+        restaurants: dict,
+        order_products: List
+    ) -> List:
+        if self.restaurant:
+            return []
+
+        possible_restaurants = []
+        for restaurant, menu_products in menu.items():
+            if not all(order_product in menu_products
+                       for order_product in order_products):
+                continue
+
+            possible_restaurants.append(restaurants[restaurant])
+
+        return possible_restaurants
 
     @classmethod
     def opts(cls):
@@ -265,3 +322,15 @@ class OrderItem(models.Model):
     def __str__(self):
         return f'{self.product.name} {self.order.firstname}\
             {self.order.lastname} {self.order.address}'
+
+    @classmethod
+    def get_orders_products(cls, orders_ids: List) -> Tuple[defaultdict, Set]:
+        orders_items = cls.objects.filter(order__id__in=orders_ids)\
+            .values('order', 'product')
+        orders_products = defaultdict(list)
+        products_ids = set()
+        for order_item in orders_items:
+            orders_products[order_item['order']].append(order_item['product'])
+            products_ids.add(order_item['product'])
+
+        return orders_products, products_ids
