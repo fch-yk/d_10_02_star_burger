@@ -17,14 +17,14 @@ from .models import Order, OrderItem, Product
 logger = logging.getLogger(__file__)
 
 
-class OrderItemSeiralizer(ModelSerializer):
+class OrderItemSerializer(ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity',]
 
 
-class OrderSeiralizer(ModelSerializer):
-    products = OrderItemSeiralizer(
+class OrderSerializer(ModelSerializer):
+    products = OrderItemSerializer(
         many=True,
         allow_empty=False,
         write_only=True
@@ -48,7 +48,7 @@ def banners_list_api(request):
         {
             'title': 'Burger',
             'src': static('burger.jpg'),
-            'text': 'Tasty Burger at your door step',
+            'text': 'Tasty Burger at your doorstep',
         },
         {
             'title': 'Spices',
@@ -96,7 +96,7 @@ def product_list_api(request):
 
 @ api_view(['POST'])
 def register_order(request):
-    serializer = OrderSeiralizer(data=request.data)
+    serializer = OrderSerializer(data=request.data)
     try:
         serializer.is_valid(raise_exception=True)
     except (ValidationError) as error:
@@ -131,5 +131,5 @@ def register_order(request):
             order
         )
 
-    serializer = OrderSeiralizer(order)
+    serializer = OrderSerializer(order)
     return Response(serializer.data)
