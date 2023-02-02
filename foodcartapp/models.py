@@ -1,5 +1,5 @@
-from collections import namedtuple, defaultdict
-from typing import List, Tuple, Set, Dict
+from collections import defaultdict, namedtuple
+from typing import Dict, List, Set, Tuple
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -105,6 +105,7 @@ class RestaurantMenuItemQuerySet(models.QuerySet):
             .values(
             'restaurant',
             'restaurant__name',
+            'restaurant__address',
             'product'
         ).filter(product__id__in=products_ids)
 
@@ -148,9 +149,10 @@ class RestaurantMenuItem(models.Model):
         menus = defaultdict(list)
         for menu_item in menu_items:
             menus[menu_item['restaurant']].append(menu_item['product'])
-            restaurants[menu_item['restaurant']] = menu_item[
-                'restaurant__name'
-            ]
+            restaurants[menu_item['restaurant']] = {
+                'name': menu_item['restaurant__name'],
+                'address': menu_item['restaurant__address']
+            }
 
         return menus, restaurants
 
@@ -278,7 +280,7 @@ class Order(models.Model):
                        for order_product in order_products):
                 continue
 
-            possible_restaurants.append(restaurants[restaurant])
+            possible_restaurants.append(restaurants[restaurant].copy())
 
         return possible_restaurants
 

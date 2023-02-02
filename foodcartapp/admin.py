@@ -1,11 +1,18 @@
+import logging
+
+import requests
 from django.contrib import admin
 from django.shortcuts import redirect, reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
 
+from geo.models import Location
+
 from .models import (Order, OrderItem, Product, ProductCategory, Restaurant,
                      RestaurantMenuItem)
+
+logger = logging.getLogger(__file__)
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -28,6 +35,17 @@ class RestaurantAdmin(admin.ModelAdmin):
     inlines = [
         RestaurantMenuItemInline
     ]
+
+    def response_change(self, request, obj):
+        try:
+            Location.save_location(obj.address)
+        except requests.ConnectionError:
+            logger.warning(
+                'Connection error. Location for restaurant %s'
+                ' was not saved',
+                obj
+            )
+        return super().response_change(request, obj)
 
 
 @admin.register(Product)
@@ -132,6 +150,15 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ('registered_at',)
 
     def response_change(self, request, obj):
+        try:
+            Location.save_location(obj.address)
+        except requests.ConnectionError:
+            logger.warning(
+                'Connection error. Location for order %s'
+                ' was not saved',
+                obj
+            )
+
         if '_save' not in request.POST:
             return super().response_change(request, obj)
 

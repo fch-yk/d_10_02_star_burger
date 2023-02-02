@@ -32,7 +32,7 @@
         <td>{{ order_card.order.get_status_display }}</td>
         <td>{{ order_card.order.get_payment_method_display }}</td>
         <td>{{ order_card.order.cost }} руб.</td>
-        <td>{{ order_card.order.firstname }} {{ order.lastname }}</td>
+        <td>{{ order_card.order.firstname }} {{ order_card.order.lastname }}</td>
         <td>{{ order_card.order.phonenumber }}</td>
         <td>{{ order_card.order.address }}</td>
         <td>{{ order_card.order.comment }}</td>
@@ -44,7 +44,12 @@
               <summary>Может быть приготовлен ресторанами:</summary>
                 <ul>
                   {% for restaurant in order_card.possible_restaurants %}
-                    <li>{{ restaurant }}</li>
+                    <li>{{ restaurant.name }} -
+                      {% if restaurant.distance_error %}
+                        Ошибка определения координат
+                      {% else %} {{ restaurant.distance|floatformat:"-3" }} км
+                      {% endif %}
+                    </li>
                   {% empty %}
                     <li>Рестораны не найдены!</li>
                   {% endfor %}

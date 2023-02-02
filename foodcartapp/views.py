@@ -1,3 +1,6 @@
+import logging
+
+import requests
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import JsonResponse
@@ -7,7 +10,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
+from geo.models import Location
+
 from .models import Order, OrderItem, Product
+
+logger = logging.getLogger(__file__)
 
 
 class OrderItemSeiralizer(ModelSerializer):
@@ -114,6 +121,15 @@ def register_order(request):
             ) for fields in products_fields
         ]
         OrderItem.objects.bulk_create(products)
+
+    try:
+        Location.save_location(order.address)
+    except requests.ConnectionError:
+        logger.warning(
+            'Connection error. Location for order %s'
+            ' was not saved',
+            order
+        )
 
     serializer = OrderSeiralizer(order)
     return Response(serializer.data)
