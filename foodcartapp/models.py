@@ -295,7 +295,7 @@ class OrderItem(models.Model):
         'Order',
         on_delete=models.CASCADE,
         verbose_name='заказ',
-        related_name='products'
+        related_name='order_items'
     )
 
     product = models.ForeignKey(
@@ -312,7 +312,7 @@ class OrderItem(models.Model):
 
     price = models.DecimalField(
         verbose_name='цена',
-        validators=[MinValueValidator(0),],
+        validators=[MinValueValidator(0), ],
         max_digits=8,
         decimal_places=2,
     )
