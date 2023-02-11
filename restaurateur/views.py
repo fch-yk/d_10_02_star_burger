@@ -134,7 +134,17 @@ def view_orders(request):
             {'order': order, 'possible_restaurants': possible_restaurants, }
         )
 
-    addresses = Location.get_addresses(order_cards)
+    addresses = set()
+    for order_card in order_cards:
+        if order_card['order'].cooking_restaurant:
+            continue
+        if not order_card['possible_restaurants']:
+            continue
+
+        addresses.add(order_card['order'].address)
+        for restaurant in order_card['possible_restaurants']:
+            addresses.add(restaurant['address'])
+
     locations = Location.get_locations(addresses)
     for order_card in order_cards:
         if order_card['order'].cooking_restaurant:

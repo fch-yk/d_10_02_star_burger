@@ -94,19 +94,3 @@ class Location(models.Model):
     @staticmethod
     def get_distance_from_restaurant(restaurant):
         return restaurant['distance']
-
-    @staticmethod
-    def get_addresses(order_cards):
-        addresses = set()
-        for order_card in order_cards:
-            if order_card['order'].cooking_restaurant:
-                continue
-            if not order_card['possible_restaurants']:
-                continue
-
-            addresses.add(order_card['order'].address)
-
-            for restaurant in order_card['possible_restaurants']:
-                addresses.add(restaurant['address'])
-
-        return addresses
