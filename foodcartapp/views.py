@@ -113,14 +113,14 @@ def register_order(request):
         )
 
         products_fields = serializer.validated_data['products']
-        products = [
+        order_items = [
             OrderItem(
                 order=order,
                 price=fields['product'].price,
                 **fields
             ) for fields in products_fields
         ]
-        OrderItem.objects.bulk_create(products)
+        OrderItem.objects.bulk_create(order_items)
 
     try:
         Location.save_location(order.address)
