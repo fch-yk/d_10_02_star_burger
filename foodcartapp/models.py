@@ -162,7 +162,7 @@ class OrderQuerySet(models.QuerySet):
         return self.prefetch_related('cooking_restaurant').\
             annotate(
             cost=Sum(F('order_items__quantity') * F('order_items__price'))
-        ).order_by('-id')
+        )
 
 
 class Order(models.Model):
