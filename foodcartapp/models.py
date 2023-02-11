@@ -242,7 +242,8 @@ class Order(models.Model):
         verbose_name='Способ оплаты',
         max_length=2,
         choices=PAYMENT_METHOD_CHOICES,
-        default=IN_CASH,
+        null=True,
+        blank=True,
         db_index=True,
     )
 
