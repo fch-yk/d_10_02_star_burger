@@ -113,7 +113,12 @@ def view_orders(request):
             '-id',
     )
     orders_ids = [order.id for order in orders]
-    orders_products, products_ids = OrderItem.get_orders_products(orders_ids)
+    orders_products = OrderItem.get_orders_products(orders_ids)
+
+    products_ids = [
+        order_item['product'] for order_item in OrderItem.objects
+        .filter(order__id__in=orders_ids).distinct().values('product')
+    ]
 
     menu_items = RestaurantMenuItem.objects.get_available_menu_items(
         products_ids

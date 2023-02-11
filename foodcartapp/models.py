@@ -161,7 +161,7 @@ class OrderQuerySet(models.QuerySet):
     def get_cost(self):
         return self.prefetch_related('restaurant').\
             annotate(
-            cost=Sum(F('products__quantity') * F('products__price'))
+            cost=Sum(F('order_items__quantity') * F('order_items__price'))
         ).order_by('-id')
 
 
@@ -330,9 +330,7 @@ class OrderItem(models.Model):
         orders_items = cls.objects.filter(order__id__in=orders_ids)\
             .values('order', 'product')
         orders_products = defaultdict(list)
-        products_ids = set()
         for order_item in orders_items:
             orders_products[order_item['order']].append(order_item['product'])
-            products_ids.add(order_item['product'])
 
-        return orders_products, products_ids
+        return orders_products
