@@ -1,5 +1,3 @@
-import sys
-
 from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
@@ -8,7 +6,6 @@ from django.db.models import Case, Value, When
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
-from geopy.distance import distance
 
 from foodcartapp.models import (Order, OrderItem, Product, Restaurant,
                                 RestaurantMenuItem)
@@ -137,8 +134,8 @@ def view_orders(request):
             {'order': order, 'possible_restaurants': possible_restaurants, }
         )
 
-    addresses = get_addresses(order_cards)
-    locations = get_locations(addresses)
+    addresses = Location.get_addresses(order_cards)
+    locations = Location.get_locations(addresses)
     for order_card in order_cards:
         if order_card['order'].cooking_restaurant:
             continue
@@ -148,7 +145,7 @@ def view_orders(request):
         order_location = locations.get(order_card['order'].address, None)
         for restaurant in order_card['possible_restaurants']:
             restaurant['distance_error'], restaurant['distance']\
-                = get_distance(
+                = Location.get_distance(
                     order_location,
                     restaurant['address'],
                     locations
@@ -161,7 +158,7 @@ def view_orders(request):
             continue
 
         order_card['possible_restaurants'].sort(
-            key=get_distance_from_restaurant
+            key=Location.get_distance_from_restaurant
         )
 
     return render(
@@ -170,54 +167,3 @@ def view_orders(request):
             'order_opts': Order.opts()
         }
     )
-
-
-def get_distance_from_restaurant(restaurant):
-    return restaurant['distance']
-
-
-def get_addresses(order_cards):
-    addresses = set()
-    for order_card in order_cards:
-        if order_card['order'].cooking_restaurant:
-            continue
-        if not order_card['possible_restaurants']:
-            continue
-
-        addresses.add(order_card['order'].address)
-
-        for restaurant in order_card['possible_restaurants']:
-            addresses.add(restaurant['address'])
-
-    return addresses
-
-
-def get_locations(addresses):
-    locations = Location.objects.filter(address__in=addresses).values(
-        'address',
-        'latitude',
-        'longitude',
-    )
-    locations_catalog = {}
-    for location in locations:
-        locations_catalog[location['address']] = {
-            'latitude': location['latitude'],
-            'longitude': location['longitude'],
-        }
-
-    return locations_catalog
-
-
-def get_distance(order_location, restaurant_address, locations):
-    if not order_location:
-        return True, sys.maxsize
-
-    restaurant_location = locations.get(restaurant_address, None)
-    if not restaurant_location:
-        return True, sys.maxsize
-
-    distance_km = distance(
-        (order_location['latitude'], order_location['longitude']),
-        (restaurant_location['latitude'], restaurant_location['longitude'])
-    ).km
-    return False, distance_km
