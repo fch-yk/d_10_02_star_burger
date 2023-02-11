@@ -30,14 +30,18 @@
       <tr>
         <td>{{ order_card.order.id }}</td>
         <td>{{ order_card.order.get_status_display }}</td>
-        <td>{{ order_card.order.get_payment_method_display }}</td>
+        <td>
+          {% if order_card.order.payment_method %}
+            {{ order_card.order.get_payment_method_display }}
+          {% endif %}
+        </td>
         <td>{{ order_card.order.cost }} руб.</td>
         <td>{{ order_card.order.firstname }} {{ order_card.order.lastname }}</td>
         <td>{{ order_card.order.phonenumber }}</td>
         <td>{{ order_card.order.address }}</td>
         <td>{{ order_card.order.comment }}</td>
-        {% if order_card.order.restaurant %}
-          <td>Готовит {{ order_card.order.restaurant }}</td>
+        {% if order_card.order.cooking_restaurant %}
+          <td>Готовит {{ order_card.order.cooking_restaurant }}</td>
         {% else %}
           <td>
             <details>

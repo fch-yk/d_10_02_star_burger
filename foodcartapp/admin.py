@@ -169,6 +169,6 @@ class OrderAdmin(admin.ModelAdmin):
         return super().response_change(request, obj)
 
     def save_model(self, request, obj, form, change):
-        if obj.restaurant and obj.status == obj.UNPROCESSED:
+        if obj.cooking_restaurant and obj.status == obj.UNPROCESSED:
             obj.status = obj.ASSEMBLY
         super().save_model(request, obj, form, change)

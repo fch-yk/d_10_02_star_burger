@@ -159,7 +159,7 @@ class RestaurantMenuItem(models.Model):
 
 class OrderQuerySet(models.QuerySet):
     def get_cost(self):
-        return self.prefetch_related('restaurant').\
+        return self.prefetch_related('cooking_restaurant').\
             annotate(
             cost=Sum(F('order_items__quantity') * F('order_items__price'))
         ).order_by('-id')
@@ -247,7 +247,7 @@ class Order(models.Model):
         db_index=True,
     )
 
-    restaurant = models.ForeignKey(
+    cooking_restaurant = models.ForeignKey(
         Restaurant,
         related_name='orders',
         verbose_name="ресторан",
@@ -272,7 +272,7 @@ class Order(models.Model):
         restaurants: dict,
         order_products: List
     ) -> List:
-        if self.restaurant:
+        if self.cooking_restaurant:
             return []
 
         possible_restaurants = []
