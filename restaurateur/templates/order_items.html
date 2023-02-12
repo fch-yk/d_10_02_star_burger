@@ -61,7 +61,7 @@
             </details>
           </td>
         {% endif %}
-        <td><a href="{% url order_opts|admin_urlname:'change' order_card.order.id %}?next={{request.path|urlencode}}">Редактировать</a></td>
+        <td><a href="{% url order_model_description|admin_urlname:'change' order_card.order.id %}?next={{request.path|urlencode}}">Редактировать</a></td>
       </tr>
     {% endfor %}
    </table>

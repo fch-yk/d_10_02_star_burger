@@ -174,6 +174,6 @@ def view_orders(request):
     return render(
         request, template_name='order_items.html', context={
             'order_cards': order_cards,
-            'order_opts': Order.opts()
+            'order_model_description': Order.get_model_description()
         }
     )

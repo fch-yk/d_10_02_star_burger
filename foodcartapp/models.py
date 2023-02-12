@@ -286,9 +286,9 @@ class Order(models.Model):
         return possible_restaurants
 
     @classmethod
-    def opts(cls):
-        Opts = namedtuple('Opts', ['app_label', 'model_name'])
-        return Opts(cls._meta.app_label, cls._meta.model_name)
+    def get_model_description(cls):
+        Description = namedtuple('Opts', ['app_label', 'model_name'])
+        return Description(cls._meta.app_label, cls._meta.model_name)
 
 
 class OrderItem(models.Model):
