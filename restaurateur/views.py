@@ -1,3 +1,5 @@
+import sys
+
 from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
@@ -145,21 +147,40 @@ def view_orders(request):
         for restaurant in order_card['possible_restaurants']:
             addresses.add(restaurant['address'])
 
-    locations = Location.get_locations(addresses)
+    locations_catalog = {}
+    locations = Location.objects.filter(address__in=addresses).values(
+        'address',
+        'latitude',
+        'longitude',
+    )
+    for location in locations:
+        locations_catalog[location['address']] = {
+            'latitude': location['latitude'],
+            'longitude': location['longitude'],
+        }
+
     for order_card in order_cards:
         if order_card['order'].cooking_restaurant:
             continue
         if not order_card['possible_restaurants']:
             continue
 
-        order_location = locations.get(order_card['order'].address, None)
+        order_location = locations_catalog.get(
+            order_card['order'].address, None
+        )
         for restaurant in order_card['possible_restaurants']:
-            restaurant['distance_error'], restaurant['distance']\
-                = Location.get_distance(
-                    order_location,
-                    restaurant['address'],
-                    locations
+            distance = Location.get_distance(
+                order_location,
+                restaurant['address'],
+                locations_catalog
             )
+
+            if distance is None:
+                restaurant['distance'] = sys.maxsize
+                restaurant['distance_error'] = True
+            else:
+                restaurant['distance'] = distance
+                restaurant['distance_error'] = False
 
         if all(
             restaurant['distance_error']

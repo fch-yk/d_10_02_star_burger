@@ -1,5 +1,3 @@
-import sys
-
 import requests
 from django.conf import settings
 from django.db import models
@@ -40,22 +38,6 @@ class Location(models.Model):
                 defaults={'latitude': latitude, 'longitude': longitude}
             )
 
-    @classmethod
-    def get_locations(cls, addresses):
-        locations = cls.objects.filter(address__in=addresses).values(
-            'address',
-            'latitude',
-            'longitude',
-        )
-        locations_catalog = {}
-        for location in locations:
-            locations_catalog[location['address']] = {
-                'latitude': location['latitude'],
-                'longitude': location['longitude'],
-            }
-
-        return locations_catalog
-
     @staticmethod
     def fetch_coordinates(apikey, address):
         base_url = "https://geocode-maps.yandex.ru/1.x"
@@ -79,17 +61,17 @@ class Location(models.Model):
     @staticmethod
     def get_distance(order_location, restaurant_address, locations):
         if not order_location:
-            return True, sys.maxsize
+            return None
 
         restaurant_location = locations.get(restaurant_address, None)
         if not restaurant_location:
-            return True, sys.maxsize
+            return None
 
         distance_km = distance(
             (order_location['latitude'], order_location['longitude']),
             (restaurant_location['latitude'], restaurant_location['longitude'])
         ).km
-        return False, distance_km
+        return distance_km
 
     @staticmethod
     def get_distance_from_restaurant(restaurant):
