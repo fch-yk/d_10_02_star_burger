@@ -1,5 +1,5 @@
 from collections import defaultdict, namedtuple
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -327,7 +327,7 @@ class OrderItem(models.Model):
             {self.order.lastname} {self.order.address}'
 
     @classmethod
-    def get_orders_products(cls, orders_ids: List) -> Tuple[defaultdict, Set]:
+    def get_orders_products(cls, orders_ids: List) -> defaultdict:
         orders_items = cls.objects.filter(order__id__in=orders_ids)\
             .values('order', 'product')
         orders_products = defaultdict(list)
