@@ -161,7 +161,7 @@ class OrderQuerySet(models.QuerySet):
     def get_cost(self):
         return self.prefetch_related('cooking_restaurant').\
             annotate(
-            cost=Sum(F('order_items__quantity') * F('order_items__price'))
+            cost=Sum(F('items__quantity') * F('items__price'))
         )
 
 
@@ -296,7 +296,7 @@ class OrderItem(models.Model):
         'Order',
         on_delete=models.CASCADE,
         verbose_name='заказ',
-        related_name='order_items'
+        related_name='items'
     )
 
     product = models.ForeignKey(
