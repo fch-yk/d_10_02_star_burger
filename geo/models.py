@@ -1,7 +1,6 @@
 import requests
 from django.conf import settings
 from django.db import models
-from geopy.distance import distance
 
 
 class Location(models.Model):
@@ -57,21 +56,6 @@ class Location(models.Model):
         most_relevant = found_places[0]
         lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
         return lat, lon
-
-    @staticmethod
-    def get_distance(order_location, restaurant_address, locations):
-        if not order_location:
-            return None
-
-        restaurant_location = locations.get(restaurant_address, None)
-        if not restaurant_location:
-            return None
-
-        distance_km = distance(
-            (order_location['latitude'], order_location['longitude']),
-            (restaurant_location['latitude'], restaurant_location['longitude'])
-        ).km
-        return distance_km
 
     @staticmethod
     def get_distance_from_restaurant(restaurant):

@@ -8,6 +8,7 @@ from django.db.models import Case, Value, When
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
+from geopy.distance import distance
 
 from foodcartapp.models import (Order, OrderItem, Product, Restaurant,
                                 RestaurantMenuItem)
@@ -169,18 +170,25 @@ def view_orders(request):
             order_card['order'].address, None
         )
         for restaurant in order_card['possible_restaurants']:
-            distance = Location.get_distance(
-                order_location,
-                restaurant['address'],
-                locations_catalog
-            )
+            restaurant['distance'] = sys.maxsize
+            restaurant['distance_error'] = True
+            if not order_location:
+                continue
 
-            if distance is None:
-                restaurant['distance'] = sys.maxsize
-                restaurant['distance_error'] = True
-            else:
-                restaurant['distance'] = distance
-                restaurant['distance_error'] = False
+            restaurant_location = locations_catalog.get(
+                restaurant['address'], None
+            )
+            if not restaurant_location:
+                continue
+
+            distance_km = distance(
+                (order_location['latitude'], order_location['longitude']),
+                (restaurant_location['latitude'],
+                 restaurant_location['longitude'])
+            ).km
+
+            restaurant['distance'] = distance_km
+            restaurant['distance_error'] = False
 
         if all(
             restaurant['distance_error']
