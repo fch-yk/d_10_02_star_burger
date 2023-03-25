@@ -5,6 +5,7 @@ pyrightconfig.json
 tmp*.*
 *.code-workspace
 prod_static/
+staticfiles/
 
 bundles/**
 node_modules/
