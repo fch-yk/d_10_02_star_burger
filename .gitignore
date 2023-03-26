@@ -11,6 +11,10 @@ bundles/**
 node_modules/
 media/
 venv*/
+.requirements.txt.un~
+requirements.txt~
+..gitignore.un~
+.gitignore~
 
 
 # Byte-compiled / optimized / DLL files

@@ -31,6 +31,8 @@ npm ci --dev
   - `TIME_ZONE` - a string representing the time zone for this database connection(optional `UTC` by default);
   - `YA_API_KEY` - your YANDEX API key (obligatory, go to [the develop cabinet](https://developer.tech.yandex.ru/) for more);
   - `ALLOWED_HOSTS` - a list of strings representing the host/domain names that this Django site can serve (optional, `localhost,127.0.0.1` by default);
+  - `POST_SERVER_ITEM_ACCESS_TOKEN` - a token to set an error report to the [rollbar.com tracking platform](https://rollbar.com/) (obligatory);
+  - `ENVIRONMENT` - a string that describes the current environment, for example `development` or `production` (optional, `development` by default). It is used in an error report to the [rollbar.com tracking platform](https://rollbar.com/).
 
 To set up variables in .env file, create it in the root directory of the project and fill it up like this:
 
@@ -41,6 +43,8 @@ LANGUAGE_CODE=en-us
 TIME_ZONE=Europe/Moscow
 YA_API_KEY=replace_me
 ALLOWED_HOSTS=localhost,127.0.0.1
+POST_SERVER_ITEM_ACCESS_TOKEN=replace_me
+ENVIRONMENT=development
 ```
 
 - Create SQLite database:

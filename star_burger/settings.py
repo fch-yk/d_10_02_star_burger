@@ -1,9 +1,8 @@
 import os
 
 import dj_database_url
-
 from environs import Env
-
+from git import Repo
 
 env = Env()
 env.read_env()
@@ -41,6 +40,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404'
 ]
 
 ROOT_URLCONF = 'star_burger.urls'
@@ -89,18 +89,19 @@ DATABASES = {
     )
 }
 
+pwd_validation_path = 'django.contrib.auth.password_validation'
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': f'{pwd_validation_path}.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': f'{pwd_validation_path}.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': f'{pwd_validation_path}.CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': f'{pwd_validation_path}.NumericPasswordValidator',
     },
 ]
 
@@ -133,3 +134,10 @@ REST_FRAMEWORK = {
 }
 
 YA_API_KEY = env.str('YA_API_KEY')
+ROLLBAR = {
+    'access_token': env('POST_SERVER_ITEM_ACCESS_TOKEN'),
+    'environment': env('ENVIRONMENT', 'development'),
+    'code_version': '1.0',
+    'branch': Repo(path=BASE_DIR).active_branch.name,
+    'root': BASE_DIR,
+}
