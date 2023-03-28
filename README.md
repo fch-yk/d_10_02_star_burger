@@ -32,7 +32,8 @@ npm ci --dev
   - `YA_API_KEY` - your YANDEX API key (obligatory, go to [the develop cabinet](https://developer.tech.yandex.ru/) for more);
   - `ALLOWED_HOSTS` - a list of strings representing the host/domain names that this Django site can serve (optional, `localhost,127.0.0.1` by default);
   - `POST_SERVER_ITEM_ACCESS_TOKEN` - a token to set an error report to the [rollbar.com tracking platform](https://rollbar.com/) (obligatory);
-  - `ENVIRONMENT` - a string that describes the current environment, for example `development` or `production` (optional, `development` by default). It is used in an error report to the [rollbar.com tracking platform](https://rollbar.com/).
+  - `ENVIRONMENT` - a string that describes the current environment, for example `development` or `production` (optional, `development` by default). It is used in an error report to the [rollbar.com tracking platform](https://rollbar.com/);
+  - `DATABASE_URL` - a database URL, see [URL schema](https://github.com/jazzband/dj-database-url#url-schema) for more (obligatory)
 
 To set up variables in .env file, create it in the root directory of the project and fill it up like this:
 
@@ -45,6 +46,7 @@ YA_API_KEY=replace_me
 ALLOWED_HOSTS=localhost,127.0.0.1
 POST_SERVER_ITEM_ACCESS_TOKEN=replace_me
 ENVIRONMENT=development
+DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/BASE_NAME
 ```
 
 - Create SQLite database:

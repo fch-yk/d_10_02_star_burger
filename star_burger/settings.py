@@ -1,6 +1,5 @@
 import os
 
-import dj_database_url
 from environs import Env
 from git import Repo
 
@@ -84,9 +83,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3'))
-    )
+    'default': env.dj_db_url("DATABASE_URL")
 }
 
 pwd_validation_path = 'django.contrib.auth.password_validation'
