@@ -15,7 +15,8 @@ venv*/
 requirements.txt~
 ..gitignore.un~
 .gitignore~
-
+.swo
+.swp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

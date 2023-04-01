@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+set -e 
+set -o pipefail
+line=-----------------------------------------------------------------------------
+echo $line
+echo "remote repositories:"
+git remote -v
+
+echo $line
+echo "pull:"
+git pull
+
+echo $line
+
+
