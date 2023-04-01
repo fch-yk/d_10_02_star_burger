@@ -78,6 +78,14 @@ python manage.py runserver
 - Go to [the admin site](http://127.0.0.1:8000/admin/) and fill the base;
 - Go to [the home page](http://127.0.0.1:8000/).
 
+## Updating the code on the server
+
+Run:
+
+```bash
+./deploy
+```
+
 ## Interfaces
 
 ### Home page
