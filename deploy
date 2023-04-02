@@ -45,6 +45,14 @@ systemctl reload nginx
 systemctl status nginx
 
 echo $line
+echo "send the deploy message to rollbar.com..."
+source .env
+revision=$(git rev-parse --verify HEAD)
+file_name=`basename "$0"`
+curl -H "X-Rollbar-Access-Token: "$POST_SERVER_ITEM_ACCESS_TOKEN -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d '{"environment": "'${ENVIRONMENT}'", "revision": "'$revision'", "local_username": "'$USER'", "comment": "script: '$file_name'", "status": "succeeded"}'
+
+
+echo $line
 echo "The deploy completed successfully!"
 
 echo $line
