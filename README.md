@@ -4,6 +4,8 @@ This is the website of the Star Burger restaurant chain. Here you can order exce
 
 ![home page](./screenshots/home_ui.gif)
 
+The example of the website is [here](https://yksb.freemyip.com/).
+
 ## Prerequisites
 
 - Python 3.11;
