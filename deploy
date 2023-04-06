@@ -31,7 +31,7 @@ venv102/bin/python manage.py collectstatic --noinput
 
 echo $line
 echo migrate...
-venv102/bin/python manage.py migrate
+venv102/bin/python manage.py migrate --noinput
 
 
 echo $line
