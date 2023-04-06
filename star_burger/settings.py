@@ -132,8 +132,8 @@ REST_FRAMEWORK = {
 
 YA_API_KEY = env.str('YA_API_KEY')
 ROLLBAR = {
-    'access_token': env('POST_SERVER_ITEM_ACCESS_TOKEN'),
-    'environment': env('ENVIRONMENT', 'development'),
+    'access_token': env('ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN'),
+    'environment': env('ROLLBAR_ENVIRONMENT', 'development'),
     'code_version': '1.0',
     'branch': Repo(path=BASE_DIR).active_branch.name,
     'root': BASE_DIR,
