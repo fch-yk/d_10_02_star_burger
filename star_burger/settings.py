@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'geo',
 ]
 
+ROLLBAR_ON = env.bool('ROLLBAR_ON', False)
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -39,8 +41,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404'
 ]
+
+if ROLLBAR_ON:
+    MIDDLEWARE.append(
+        'rollbar.contrib.django.middleware'
+        '.RollbarNotifierMiddlewareExcluding404'
+    )
 
 ROOT_URLCONF = 'star_burger.urls'
 
@@ -131,10 +138,12 @@ REST_FRAMEWORK = {
 }
 
 YA_API_KEY = env.str('YA_API_KEY')
-ROLLBAR = {
-    'access_token': env('ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN'),
-    'environment': env('ROLLBAR_ENVIRONMENT', 'development'),
-    'code_version': '1.0',
-    'branch': Repo(path=BASE_DIR).active_branch.name,
-    'root': BASE_DIR,
-}
+
+if ROLLBAR_ON:
+    ROLLBAR = {
+        'access_token': env('ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN'),
+        'environment': env('ROLLBAR_ENVIRONMENT', 'development'),
+        'code_version': '1.0',
+        'branch': Repo(path=BASE_DIR).active_branch.name,
+        'root': BASE_DIR,
+    }

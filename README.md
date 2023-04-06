@@ -29,12 +29,13 @@ npm ci --dev
 
   - `SECRET_KEY` - a secret key for a particular Django installation (obligatory);
   - `DEBUG` - a boolean that turns on/off debug mode (optional, `True` by default);
-  - `LANGUAGE_CODE` - a string representing the language code for this installation (optional `ru-RU` by default);
-  - `TIME_ZONE` - a string representing the time zone for this database connection(optional `UTC` by default);
+  - `LANGUAGE_CODE` - a string representing the language code for this installation (optional, `ru-RU` by default);
+  - `TIME_ZONE` - a string representing the time zone for this database connection(optional, `UTC` by default);
   - `YA_API_KEY` - your YANDEX API key (obligatory, go to [the develop cabinet](https://developer.tech.yandex.ru/) for more);
   - `ALLOWED_HOSTS` - a list of strings representing the host/domain names that this Django site can serve (optional, `localhost,127.0.0.1` by default);
-  - `POST_SERVER_ITEM_ACCESS_TOKEN` - a token to set an error report to the [rollbar.com tracking platform](https://rollbar.com/) (obligatory);
-  - `ENVIRONMENT` - a string that describes the current environment, for example `development` or `production` (optional, `development` by default). It is used in an error report to the [rollbar.com tracking platform](https://rollbar.com/);
+  - `ROLLBAR_ON` - a boolean that turns on/off [rollbar.com tracking platform](https://rollbar.com/) (optional, `False` by default)
+  - `ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN` - a token to set an error report to the [rollbar.com tracking platform](https://rollbar.com/) (obligatory only in the case when `ROLLBAR_ON` is `True`);
+  - `ROLLBAR_ENVIRONMENT` - a string that describes the current environment, for example `development` or `production` (optional, `development` by default). It is used in an error report to the [rollbar.com tracking platform](https://rollbar.com/);
   - `DATABASE_URL` - a database URL, see [URL schema](https://github.com/jazzband/dj-database-url#url-schema) for more (obligatory)
 
 To set up variables in .env file, create it in the root directory of the project and fill it up like this:
@@ -46,8 +47,9 @@ LANGUAGE_CODE=en-us
 TIME_ZONE=Europe/Moscow
 YA_API_KEY=replace_me
 ALLOWED_HOSTS=localhost,127.0.0.1
-POST_SERVER_ITEM_ACCESS_TOKEN=replace_me
-ENVIRONMENT=development
+ROLLBAR_ON=True
+ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN=replace_me
+ROLLBAR_ENVIRONMENT=development
 DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/BASE_NAME
 ```
 
